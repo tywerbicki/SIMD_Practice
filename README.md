@@ -1,4 +1,4 @@
-# SIMD_Practice
+# SIMD Practice Cases
 
 ## Compilation
 
