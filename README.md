@@ -4,7 +4,7 @@
 
 Must include the `-mavx` compiler flag when compiling with GCC. <br>
 As an example: `gcc <program.c> -o <program.exe> -mavx` <br>
-Moreover, if pthreads is being used, the `-lpthread` compiler flag must be included.
+Moreover, if pthreads is being used, the `-lpthread` compiler flag must be included. <br>
 As an example: `gcc <program.c> -o <program.exe> -mavx -lpthread`
 
 ## Programs
