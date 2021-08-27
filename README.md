@@ -22,3 +22,9 @@ This program is a practice case of using simd intrinsics with multiple threads t
 This program uses simd intrinsics to generate uniform and normal random vectors very quickly. <br>
 Because this program uses some AVX2 intrinsics, the CPU architecture must be specified to the compiler via the `-march` compiler flag. Additionally, the `math.h` header file must be linked via the compiler flag `-lm`. <br>
 As an example: `gcc <random_simd.c> -o <test.exe> -mavx -march=znver2 -lm`
+
+### correlation_simd.c
+
+This program uses simd intrinsics to calculate the Pearson correlation coefficient between 2 vectors. <br>
+Compile with: `gcc <correlation_simd.c> -o <test.exe> -march=znver2 -lm` <br>
+You'll notice that the simd implementation is about 2.5x slower than the scalar implementation. This is likely because of the frequent array loading and insignificant number crunching.
