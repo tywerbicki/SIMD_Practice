@@ -3,6 +3,9 @@
 #include <immintrin.h>
 #include <pthread.h>
 
+size_t vecSize;
+float* vecAddress;
+
 static inline float _mm_hSum_ps(__m128* v)
 {
     __m128 _shift = _mm_movehdup_ps(*v);
@@ -40,7 +43,6 @@ typedef struct threadData
 {
     pthread_mutex_t* lockAddress;
     float* sumAddress;
-    const float* vecAddress;
     unsigned int startIndex;
     unsigned int stopIndex;
 } threadData_t;
@@ -48,7 +50,7 @@ typedef struct threadData
 void* f32VectorReduce_thread(void* arg)
 {
     threadData_t* d = (threadData_t*)arg;
-    const float* threadStart = d->vecAddress + d->startIndex;
+    const float* threadStart = vecAddress + d->startIndex;
     const unsigned int threadSize = d->stopIndex - d->startIndex;
     float partialSum = f32VectorReduce_simd(threadStart, threadSize);
     pthread_mutex_lock(d->lockAddress);
@@ -56,7 +58,7 @@ void* f32VectorReduce_thread(void* arg)
     pthread_mutex_unlock(d->lockAddress);
 }
 
-float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const float* vecAddress, const unsigned int size)
+float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const unsigned int size)
 {   
     pthread_mutex_t LOCK;
     int error = pthread_mutex_init(&LOCK, NULL);
@@ -65,14 +67,14 @@ float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const float* vecAd
         printf("Lock initialization failed.");
         exit(1);
     }
-    float sum = 0.0;
+    float sum = 0.0f;
     pthread_t threads[NUM_THREADS];
     threadData_t data[NUM_THREADS]; 
     const unsigned int elemPerThread = size / (NUM_THREADS * 8) * 8;
     
     for (size_t i = 0; i < NUM_THREADS; i++)
     {   
-        data[i].lockAddress = &LOCK; data[i].sumAddress = &sum; data[i].vecAddress = vecAddress;
+        data[i].lockAddress = &LOCK; data[i].sumAddress = &sum;
         data[i].startIndex = i * elemPerThread;
         data[i].stopIndex = (i + 1) * elemPerThread;
         pthread_create(&threads[i], NULL, &f32VectorReduce_thread, (void*)&data[i]);
@@ -92,12 +94,12 @@ float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const float* vecAd
 
 int main(void)
 {
-    const unsigned int vecSize = 1001;
-    float* vecAddress = (float*)malloc(sizeof(float) * vecSize);
+    vecSize = 11111;
+    vecAddress = (float*)aligned_alloc(sizeof(float) * 8, sizeof(float) * vecSize);
     for (size_t i = 0; i < vecSize; i++)
-    {   vecAddress[i] = 3.0;    }
+    {   vecAddress[i] = 2.5;    }
     
-    float sum = f32VectorReduce_mt_simd(3, vecAddress, vecSize);
+    float sum = f32VectorReduce_mt_simd(3, vecSize);
     free(vecAddress);
     
     printf("Sum: %f \n", sum);
