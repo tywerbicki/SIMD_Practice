@@ -11,7 +11,7 @@ As an example: `gcc <program.c> -o <program.exe> -mavx -lpthread`
 
 ### doubleMask_simd.c
 
-This program is a practice case of modifying an array based on two unique conditions using SIMD intrinsics. 
+This program is a practice case of modifying an array based on two unique conditions using simd intrinsics. 
 
 ### f32VectorReduce_mt_simd.c
 
