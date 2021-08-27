@@ -31,7 +31,7 @@ float f32VectorReduce_simd(const float* vec, const unsigned int size)
         sum += _mm256_hSum_ps(&_tmp);
     }
     for (size_t i = simdWork; i < size; i++)
-    {   sum += *(vec + i);  }
+    {   sum += vec[i];  }
 
     return sum;
 }
@@ -45,20 +45,15 @@ typedef struct threadData
     unsigned int stopIndex;
 } threadData_t;
 
-void f32IncrementSharedSum(float* sumAddress, const float increment, pthread_mutex_t* lockAddress)
-{
-    pthread_mutex_lock(lockAddress);
-    *sumAddress += increment;
-    pthread_mutex_unlock(lockAddress);
-}
-
 void* f32VectorReduce_thread(void* arg)
 {
     threadData_t* d = (threadData_t*)arg;
     const float* threadStart = d->vecAddress + d->startIndex;
     const unsigned int threadSize = d->stopIndex - d->startIndex;
     float partialSum = f32VectorReduce_simd(threadStart, threadSize);
-    f32IncrementSharedSum(d->sumAddress, partialSum, d->lockAddress);
+    pthread_mutex_lock(d->lockAddress);
+    *(d->sumAddress) += partialSum;
+    pthread_mutex_unlock(d->lockAddress);
 }
 
 float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const float* vecAddress, const unsigned int size)
@@ -74,7 +69,6 @@ float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const float* vecAd
     pthread_t threads[NUM_THREADS];
     threadData_t data[NUM_THREADS]; 
     const unsigned int elemPerThread = size / (NUM_THREADS * 8) * 8;
-    printf("%d \n", elemPerThread);
     
     for (size_t i = 0; i < NUM_THREADS; i++)
     {   
@@ -85,7 +79,7 @@ float f32VectorReduce_mt_simd(const unsigned int NUM_THREADS, const float* vecAd
     }
     pthread_mutex_lock(&LOCK);
     for (size_t i = elemPerThread * NUM_THREADS; i < size; i++)
-    {   sum += *(vecAddress + i);   }
+    {   sum += vecAddress[i];   }
     pthread_mutex_unlock(&LOCK);
     
     for (size_t i = 0; i < NUM_THREADS; i++)
@@ -101,7 +95,7 @@ int main(void)
     const unsigned int vecSize = 1001;
     float* vecAddress = (float*)malloc(sizeof(float) * vecSize);
     for (size_t i = 0; i < vecSize; i++)
-    {   *(vecAddress + i) = 3.0;    }
+    {   vecAddress[i] = 3.0;    }
     
     float sum = f32VectorReduce_mt_simd(3, vecAddress, vecSize);
     free(vecAddress);
