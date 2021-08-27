@@ -27,4 +27,4 @@ As an example: `gcc <random_simd.c> -o <test.exe> -mavx -march=znver2 -lm`
 
 This program uses simd intrinsics to calculate the Pearson correlation coefficient between 2 vectors. <br>
 Compile with: `gcc <correlation_simd.c> -o <test.exe> -march=znver2 -lm` <br>
-You'll notice that the simd implementation is about 2.5x slower than the scalar implementation. This is likely because of the frequent array loading and insignificant / uncomplex number crunching.
+You'll notice that the simd implementation is about 2.5x slower than the scalar implementation. This is likely because of the frequent array loading and the absence of any code branching throughout the number crunching. Thus, the compiler is able to optimize the scalar code quite well.
