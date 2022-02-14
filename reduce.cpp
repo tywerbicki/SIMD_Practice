@@ -49,7 +49,7 @@ int main() {
     end = std::chrono::steady_clock::now();
     std::chrono::duration<double> duration_simd = end - start;
 
-    delete vec;
+    delete[] vec;
 
     std::cout << "Sum: " << result << "  Duration: " << duration.count() << "\n";
     std::cout << "Sum_simd: " << result_simd << "  Duration: " << duration_simd.count() << std::endl;
