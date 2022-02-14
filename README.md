@@ -1,6 +1,4 @@
-# SIMD Practice Cases
-
-## Compilation
+# Compilation
 
 Must include the `-mavx2` compiler flag when compiling with gcc/g++. <br>
 As an example: 
@@ -10,7 +8,7 @@ Additionally, you can also specify the architecture of the target microprocessor
 As an example:
 > `g++ -O3 <program.cpp> -o <program.exe> -march=znver3 -mavx2` <br>
 
-## Programs
+# Programs
 
 ### doubleMask_simd.c
 
