@@ -22,8 +22,9 @@ This program uses simd intrinsics to perform a summation reduction over a vector
 
 ### random_simd.c
 
-This program uses simd intrinsics to generate uniform and normal random vectors very quickly. <br>
-Because this program uses some AVX2 intrinsics, the CPU architecture must be specified to the compiler via the `-march` compiler flag. Additionally, the `math.h` header file must be linked via the compiler flag `-lm`. <br>
+This program uses simd intrinsics to generate uniform and normal random vectors very quickly. 
+
+Because this program uses some AVX2 intrinsics, the CPU architecture must be specified to the compiler via the `-march` compiler flag. Additionally, the `math.h` header file must be linked via the linker flag `-lm`. <br/>
 As an example: `gcc <random_simd.c> -o <test.exe> -mavx -march=znver2 -lm`
 
 ### correlation.cpp
