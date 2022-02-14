@@ -3,9 +3,12 @@
 ## Compilation
 
 Must include the `-mavx` compiler flag when compiling with gcc/g++. <br>
-As an example: `gcc <program.c> -o <program.exe> -mavx` <br>
-Moreover, if pthreads is being used, the `-lpthread` compiler flag must be included. <br>
-As an example: `gcc <program.c> -o <program.exe> -mavx -lpthread`
+As an example: 
+> `g++ -O3 <program.cpp> -o <program.exe> -mavx` <br>
+
+Additionally, you can also specify the architecture of the target microprocessor by defining the `-march` compiler flag. <br/>
+As an example:
+> `g++ -O3 <program.cpp> -o <program.exe> -march=znver3 -mavx` <br>
 
 ## Programs
 
@@ -15,7 +18,7 @@ This program is a practice case of modifying an array based on two unique condit
 
 ### reduce.cpp
 
-This program is a practice case of using simd intrinsics to perform a summation reduction over a vector. 
+This program uses simd intrinsics to perform a summation reduction over a vector. 
 
 ### random_simd.c
 
@@ -23,8 +26,6 @@ This program uses simd intrinsics to generate uniform and normal random vectors 
 Because this program uses some AVX2 intrinsics, the CPU architecture must be specified to the compiler via the `-march` compiler flag. Additionally, the `math.h` header file must be linked via the compiler flag `-lm`. <br>
 As an example: `gcc <random_simd.c> -o <test.exe> -mavx -march=znver2 -lm`
 
-### correlation_simd.c
+### correlation.cpp
 
 This program uses simd intrinsics to calculate the Pearson correlation coefficient between 2 vectors. <br>
-Compile with: `gcc <correlation_simd.c> -o <test.exe> -march=znver2 -lm` <br>
-You'll notice that the simd implementation is about 2.5x slower than the scalar implementation. This is likely because of the frequent array loading and the absence of any code branching throughout the number crunching. Thus, the compiler is able to optimize the scalar code quite well.
