@@ -2,7 +2,7 @@
 
 ## Compilation
 
-Must include the `-mavx` compiler flag when compiling with GCC. <br>
+Must include the `-mavx` compiler flag when compiling with gcc/g++. <br>
 As an example: `gcc <program.c> -o <program.exe> -mavx` <br>
 Moreover, if pthreads is being used, the `-lpthread` compiler flag must be included. <br>
 As an example: `gcc <program.c> -o <program.exe> -mavx -lpthread`
@@ -13,9 +13,9 @@ As an example: `gcc <program.c> -o <program.exe> -mavx -lpthread`
 
 This program is a practice case of modifying an array based on two unique conditions using simd intrinsics. 
 
-### f32VectorReduce_mt_simd.c
+### reduce.cpp
 
-This program is a practice case of using simd intrinsics with multiple threads to perform a reduction over a vector. 
+This program is a practice case of using simd intrinsics to perform a summation reduction over a vector. 
 
 ### random_simd.c
 
