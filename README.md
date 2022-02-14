@@ -8,6 +8,8 @@ Additionally, you can also specify the architecture of the target microprocessor
 As an example:
 > `g++ -O3 <program.cpp> -o <program.exe> -march=znver3 -mavx2` <br>
 
+---
+
 # Programs
 
 ### doubleMask_simd.c
