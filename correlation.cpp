@@ -40,9 +40,9 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
         _tmpY = _mm256_loadu_ps(vecY + i);
         _sumX += _tmpX;
         _sumY += _tmpY;
-        _sumXY += _mm256_mul_ps(_tmpX, _tmpY);
-        _sumXX += _mm256_mul_ps(_tmpX, _tmpX);
-        _sumYY += _mm256_mul_ps(_tmpY, _tmpY);
+        _sumXY = _mm256_fmadd_ps(_tmpX, _tmpY, _sumXY);
+        _sumXX = _mm256_fmadd_ps(_tmpX, _tmpX, _sumXX);
+        _sumYY = _mm256_fmadd_ps(_tmpY, _tmpY, _sumYY);
     }
 
     _mm256_storeu_ps(sumX_tmp, _sumX);
