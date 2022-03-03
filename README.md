@@ -12,21 +12,21 @@ As an example:
 
 # Programs
 
-### doubleMask_simd.c
+### correlation.cpp
 
-This program is a practice case of modifying an array based on two unique conditions using simd intrinsics. 
+This program uses simd intrinsics to calculate the Pearson correlation coefficient between 2 vectors. This implementation generally executes 6-8X faster than single-precision scalar code.
 
 ### reduce.cpp
 
-This program uses simd intrinsics to perform a summation reduction over a vector. This implementation generally executes 6-8X faster than scalar code using 32-bit registers.
+This program uses simd intrinsics to perform a summation reduction over a vector. This implementation generally executes 6-8X faster than single-precision scalar code.
 
 ### random_simd.c
 
-This program uses simd intrinsics to generate uniform and normal random vectors very quickly. 
+This program uses simd intrinsics to generate uniform and normal random vectors quickly. 
 
 Because this program uses some AVX2 intrinsics, the CPU architecture sometimes must be specified to the compiler via the `-march` compiler flag. Additionally, the `math.h` header file must be linked via the linker flag `-lm`. <br/>
 As an example: `gcc -03 <random_simd.c> -o <test.exe> -march=znver3 -mavx2 -lm`
 
-### correlation.cpp
+### doubleMask_simd.c
 
-This program uses simd intrinsics to calculate the Pearson correlation coefficient between 2 vectors. This implementation generally executes 6-8X faster than scalar code using 32-bit registers.
+This program is a practice case of modifying an array based on two unique conditions using simd intrinsics. 
