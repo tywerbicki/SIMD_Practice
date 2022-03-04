@@ -13,17 +13,27 @@ T sum(const T * __restrict__ X, const size_t n) {
     return sum;
 }
 
+
+float _mm256_sum_reduction_ps(const __m256 vec) {
+    
+    __m128 low = _mm256_extractf128_ps(vec, 0);
+    __m128 high = _mm256_extractf128_ps(vec, 1);
+    low = _mm_add_ps(low, high);
+    high = _mm_permute_ps(low, 0b11101110);
+    low = _mm_add_ps(low, high);
+    high = _mm_permute_ps(low, 0b11100101);
+    low = _mm_add_ps(low, high);
+    return *((float*)&low);
+}
+
 float sum_simd(const float * __restrict__ X, const size_t n) {
 
     const size_t stride = sizeof(__m256) / sizeof(float);
     const size_t border = n - (n % stride);
-    float tmp[stride];
-    float sum = 0.0F;
 
     __m256 _sum = _mm256_set1_ps(0.0F);
     for (size_t i = 0; i < border; i += stride) _sum += _mm256_loadu_ps(X + i);
-    _mm256_storeu_ps(tmp, _sum);
-    for (size_t i = 0; i < stride; i++) sum += tmp[i];
+    float sum = _mm256_sum_reduction_ps(_sum);
     for (size_t i = border; i < n; i++) sum += X[i];
     
     return sum;
@@ -32,10 +42,10 @@ float sum_simd(const float * __restrict__ X, const size_t n) {
 
 int main() {
 
-    const size_t n = (2 << 8) + 7;
+    const size_t n = (2 << 9) + 7;
     float* vec = new float[n];
     
-    for (size_t i = 0; i < n; i++) vec[i] = 2.0F;
+    for (size_t i = 0; i < n; i++) vec[i] = 1.0F;
 
     float result, result_simd;
 
