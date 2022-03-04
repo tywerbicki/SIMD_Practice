@@ -1,17 +1,20 @@
 #include <iostream>
+#include <array>
 #include <immintrin.h>
 #include <cmath>
 #include <chrono>
 
-float pearsons_rho(const float * __restrict__ vecX, const float * __restrict__ vecY, const size_t n) {
+template<size_t n>
+float pearsons_rho(const std::array<float,n>& arrX, const std::array<float,n>& arrY) {
     
-    float sumX = 0.0, sumY = 0.0, sumXY = 0.0, sumXX = 0.0, sumYY = 0.0, numerator, denominator;
+    float sumX = 0.0, sumY = 0.0, sumXY = 0.0, sumXX = 0.0, sumYY = 0.0, tmpX, tmpY, numerator, denominator;
 
     for (size_t i = 0; i < n; i++) {   
-        sumX += vecX[i] ; sumY += vecY[i];  
-        sumXY += vecX[i] * vecY[i];
-        sumXX += vecX[i] * vecX[i];
-        sumYY += vecY[i] * vecY[i];
+        tmpX = arrX[i] ; tmpY = arrY[i];
+        sumX += tmpX ; sumY += tmpY;  
+        sumXY += tmpX * tmpY;
+        sumXX += tmpX * tmpX;
+        sumYY += tmpY * tmpY;
     }
 
     numerator = (n*sumXY) - (sumX*sumY);
@@ -33,8 +36,11 @@ float _mm256_sum_reduction_ps(const __m256 vec) {
     return *((float*)&low);
 }
 
-float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restrict__ vecY, const size_t n)
-{
+template<size_t n>
+float pearsons_rho_simd(const std::array<float,n>& arrX, const std::array<float,n>& arrY)
+{   
+    const float *arrX_r = arrX.data();
+    const float *arrY_r = arrY.data();
     const size_t stride = sizeof(__m256) / sizeof(float);
     const size_t simd_work = n - (n % stride);
 
@@ -45,8 +51,8 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
     
     for (size_t i = 0; i < simd_work; i += stride) {
         
-        _tmpX = _mm256_loadu_ps(vecX + i);
-        _tmpY = _mm256_loadu_ps(vecY + i);
+        _tmpX = _mm256_loadu_ps(arrX_r + i);
+        _tmpY = _mm256_loadu_ps(arrY_r + i);
         _sumX += _tmpX;
         _sumY += _tmpY;
         _sumXY = _mm256_fmadd_ps(_tmpX, _tmpY, _sumXY);
@@ -62,11 +68,11 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
     
     for (size_t i = simd_work; i < n; i++) {
 
-        sumX += vecX[i]; 
-        sumY += vecY[i];  
-        sumXY += vecX[i] * vecY[i];
-        sumXX += vecX[i] * vecX[i];
-        sumYY += vecY[i] * vecY[i];
+        sumX += arrX[i]; 
+        sumY += arrY[i];  
+        sumXY += arrX[i] * arrY[i];
+        sumXX += arrX[i] * arrX[i];
+        sumYY += arrY[i] * arrY[i];
     }
 
     float numerator = (n*sumXY) - (sumX*sumY);
@@ -79,26 +85,24 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
 
 int main() {
 
-    const size_t SIZE = 2500;
-    float *vecX = new float[SIZE];
-    float *vecY = new float[SIZE];
+    const size_t SIZE = 2500UL;
+    std::array<float,SIZE> arrX;
+    std::array<float,SIZE> arrY;
 
     for( size_t i = 0; i < SIZE; i++ ) {
-        vecX[i] = (float)i; vecY[i] = (float)i + 2.0F;
-    } 
-
+        arrX[i] = static_cast<float>(i); arrY[i] = static_cast<float>(i) + 2.0F;
+    }
+    
     auto start = std::chrono::steady_clock::now();
-    float rho = pearsons_rho(vecX, vecY, SIZE);
+    float rho = pearsons_rho<SIZE>(arrX, arrY);
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> duration = end - start;
 
     start = std::chrono::steady_clock::now();
-    float rho_simd = pearsons_rho_simd(vecX, vecY, SIZE);
+    float rho_simd = pearsons_rho_simd<SIZE>(arrX, arrY);
     end = std::chrono::steady_clock::now();
     std::chrono::duration<double> duration_simd = end - start;
 
     std::cout << "Rho: " << rho << "  Duration: " << duration.count() << "\n";
     std::cout << "Rho_simd: " << rho_simd << "  Duration: " << duration_simd.count() << std::endl;
-
-    delete[] vecX; delete[] vecY;
 }
