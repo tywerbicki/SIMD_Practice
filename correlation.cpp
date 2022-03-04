@@ -21,6 +21,18 @@ float pearsons_rho(const float * __restrict__ vecX, const float * __restrict__ v
 }
 
 
+float _mm256_sum_reduction_ps(const __m256 vec) {
+    
+    __m128 low = _mm256_extractf128_ps(vec, 0);
+    __m128 high = _mm256_extractf128_ps(vec, 1);
+    low = _mm_add_ps(low, high);
+    high = _mm_permute_ps(low, 0b11101110);
+    low = _mm_add_ps(low, high);
+    high = _mm_permute_ps(low, 0b11100101);
+    low = _mm_add_ps(low, high);
+    return *((float*)&low);
+}
+
 float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restrict__ vecY, const size_t n)
 {
     const size_t stride = sizeof(__m256) / sizeof(float);
@@ -28,11 +40,8 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
 
     __m256 _sumX, _sumY, _sumXY, _sumXX, _sumYY; 
     _sumX = _sumY = _sumXY = _sumXX = _sumYY = _mm256_set1_ps(0.0F);
-    float sumX_tmp[stride], sumY_tmp[stride], sumXY_tmp[stride], sumXX_tmp[stride], sumYY_tmp[stride];
-    float sumX, sumY, sumXY, sumXX, sumYY;
-    sumX = sumY = sumXY = sumXX = sumYY = 0.0F;
     __m256 _tmpX, _tmpY;
-    float numerator, denominator;
+    
     
     for (size_t i = 0; i < simd_work; i += stride) {
         
@@ -45,20 +54,11 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
         _sumYY = _mm256_fmadd_ps(_tmpY, _tmpY, _sumYY);
     }
 
-    _mm256_storeu_ps(sumX_tmp, _sumX);
-    _mm256_storeu_ps(sumY_tmp, _sumY);
-    _mm256_storeu_ps(sumXY_tmp, _sumXY);
-    _mm256_storeu_ps(sumXX_tmp, _sumXX);
-    _mm256_storeu_ps(sumYY_tmp, _sumYY);
-
-    for (size_t i = 0; i < stride; i++) {
-        
-        sumX += sumX_tmp[i];
-        sumY += sumY_tmp[i];
-        sumXY += sumXY_tmp[i];
-        sumXX += sumXX_tmp[i];
-        sumYY += sumYY_tmp[i];
-    }
+    float sumX = _mm256_sum_reduction_ps(_sumX);
+    float sumY = _mm256_sum_reduction_ps(_sumY);
+    float sumXY = _mm256_sum_reduction_ps(_sumXY);
+    float sumXX = _mm256_sum_reduction_ps(_sumXX);
+    float sumYY = _mm256_sum_reduction_ps(_sumYY);
     
     for (size_t i = simd_work; i < n; i++) {
 
@@ -69,8 +69,8 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
         sumYY += vecY[i] * vecY[i];
     }
 
-    numerator = (n*sumXY) - (sumX*sumY);
-    denominator = std::sqrt( (n*sumXX - sumX*sumX) * (n*sumYY - sumY*sumY) );
+    float numerator = (n*sumXY) - (sumX*sumY);
+    float denominator = std::sqrt( (n*sumXX - sumX*sumX) * (n*sumYY - sumY*sumY) );
     
     return numerator / denominator;
 }
@@ -79,7 +79,7 @@ float pearsons_rho_simd(const float * __restrict__ vecX, const float * __restric
 
 int main() {
 
-    const size_t SIZE = 5000;
+    const size_t SIZE = 2500;
     float *vecX = new float[SIZE];
     float *vecY = new float[SIZE];
 
