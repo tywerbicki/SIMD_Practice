@@ -24,7 +24,7 @@ float pearsons_rho(const std::array<float,n>& arrX, const std::array<float,n>& a
 }
 
 
-float _mm256_sum_reduction_ps(const __m256 vec) {
+static inline float _mm256_sum_reduction_ps(const __m256 vec) {
     
     __m128 low = _mm256_extractf128_ps(vec, 0);
     __m128 high = _mm256_extractf128_ps(vec, 1);
